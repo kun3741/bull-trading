@@ -81,8 +81,8 @@
 
 1. **Клонуйте репозиторій**
 ```bash
-git clone https://github.com/your-repo/bulltrading-ukraine-hiring.git
-cd bulltrading-ukraine-hiring
+git clone https://github.com/kun3741/bull-trading/
+cd bull-trading
 ```
 
 2. **Встановіть залежності**
@@ -384,4 +384,5 @@ Contributions, issues та feature requests вітаються!
 ---
     
 Зроблено з ❤️, by kun3741
+
 
