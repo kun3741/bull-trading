@@ -10,6 +10,8 @@
     "seed": "node server/seed.js",
     "build": "vite build",
     "build:dev": "vite build --mode development",
+    "start": "node server/index.js",
+    "render:build": "npm install && npm run build && npm run seed",
     "lint": "eslint .",
     "preview": "vite preview"
   },

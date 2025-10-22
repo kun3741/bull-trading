@@ -1,4 +1,6 @@
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+// In production (single service), API is at /api
+// In development, Vite proxy forwards /api to localhost:5000
+const API_URL = '/api';
 
 class ApiClient {
   private getHeaders() {
