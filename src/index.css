@@ -1,0 +1,138 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+
+    --card: 0 0% 5%;
+    --card-foreground: 0 0% 100%;
+
+    --popover: 0 0% 5%;
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 145 70% 45%;
+    --primary-foreground: 0 0% 0%;
+
+    --secondary: 0 85% 55%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 65%;
+
+    --accent: 25 95% 55%;
+    --accent-foreground: 0 0% 0%;
+
+    --destructive: 0 85% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 20%;
+    --input: 0 0% 15%;
+    --ring: 145 70% 45%;
+
+    --radius: 0.75rem;
+    
+    --bull-green: 145 70% 45%;
+    --bull-green-hover: 145 70% 55%;
+    --bear-red: 0 85% 55%;
+    --bear-red-hover: 0 85% 65%;
+    --trading-orange: 25 95% 55%;
+    --trading-orange-hover: 25 95% 65%;
+    
+    --gradient-hero: linear-gradient(135deg, hsl(145 70% 45% / 0.1), hsl(0 85% 55% / 0.1));
+    --gradient-bull: linear-gradient(135deg, hsl(145 70% 35%), hsl(145 70% 55%));
+    --gradient-bear: linear-gradient(135deg, hsl(0 85% 45%), hsl(0 85% 65%));
+    --gradient-orange: linear-gradient(135deg, hsl(25 95% 45%), hsl(25 95% 65%));
+    
+    --shadow-glow: 0 0 40px hsl(145 70% 45% / 0.3);
+    --shadow-glow-red: 0 0 40px hsl(0 85% 55% / 0.3);
+    
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  /* Performance optimizations for animations */
+  svg {
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
+  
+  .animate-fade-in,
+  .animate-pulse,
+  .animate-float {
+    backface-visibility: hidden;
+    transform: translateZ(0);
+  }
+}
+
+@layer utilities {
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+  
+  .gradient-bull {
+    background: var(--gradient-bull);
+  }
+  
+  .gradient-bear {
+    background: var(--gradient-bear);
+  }
+  
+  .gradient-orange {
+    background: var(--gradient-orange);
+  }
+  
+  .text-shadow-glow {
+    text-shadow: var(--shadow-glow);
+  }
+  
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+  
+  .shadow-glow-red {
+    box-shadow: var(--shadow-glow-red);
+  }
+  
+  .transition-smooth {
+    transition: var(--transition-smooth);
+  }
+}
