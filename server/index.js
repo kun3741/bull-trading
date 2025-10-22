@@ -4,6 +4,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 import teamRoutes from './routes/team.js';
 import advantagesRoutes from './routes/advantages.js';
 import statsRoutes from './routes/stats.js';
@@ -25,10 +26,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/bulltrading', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/bulltrading')
 .then(() => console.log('✅ MongoDB connected'))
 .catch((err) => console.error('❌ MongoDB connection error:', err));
 
@@ -48,18 +46,27 @@ app.get('/api/health', (req, res) => {
 // Serve static files from React app in production
 if (process.env.NODE_ENV === 'production') {
   const distPath = path.join(__dirname, '../dist');
-  app.use(express.static(distPath));
+  
+  // Check if dist folder exists
+  if (fs.existsSync(distPath)) {
+    app.use(express.static(distPath));
 
-  // Handle React routing, return all requests to React app
-  // Express 5 syntax - catch all non-API routes
-  app.use((req, res, next) => {
-    // If request doesn't start with /api, serve index.html
-    if (!req.path.startsWith('/api')) {
-      res.sendFile(path.join(distPath, 'index.html'));
-    } else {
-      next();
-    }
-  });
+    // Handle React routing, return all requests to React app
+    // Express 5 syntax - catch all non-API routes
+    app.use((req, res, next) => {
+      // If request doesn't start with /api, serve index.html
+      if (!req.path.startsWith('/api')) {
+        res.sendFile(path.join(distPath, 'index.html'));
+      } else {
+        next();
+      }
+    });
+    
+    console.log(`📦 Serving static files from: ${distPath}`);
+  } else {
+    console.warn(`⚠️  dist folder not found at: ${distPath}`);
+    console.warn(`⚠️  Run 'npm run build' first to generate production files`);
+  }
 }
 
 app.listen(PORT, () => {
