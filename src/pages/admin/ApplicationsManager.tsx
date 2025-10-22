@@ -210,6 +210,7 @@ export default function ApplicationsManager() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-16">№</TableHead>
                     <TableHead>Дата</TableHead>
                     <TableHead>Ім'я</TableHead>
                     <TableHead>Телефон</TableHead>
@@ -222,13 +223,16 @@ export default function ApplicationsManager() {
                 <TableBody>
                   {applications.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center text-muted-foreground">
+                      <TableCell colSpan={8} className="text-center text-muted-foreground">
                         Заявок поки немає
                       </TableCell>
                     </TableRow>
                   ) : (
-                    applications.map((app) => (
+                    applications.map((app, index) => (
                       <TableRow key={app._id}>
+                        <TableCell className="font-medium text-primary">
+                          {index + 1}
+                        </TableCell>
                         <TableCell className="whitespace-nowrap">
                           {formatDate(app.createdAt)}
                         </TableCell>

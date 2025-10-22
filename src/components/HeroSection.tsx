@@ -1,8 +1,25 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import heroBg from "@/assets/hero-bg.jpg";
+import bullLogo from "@/assets/bull-logo.png";
 import TradingAnimations from "@/components/TradingAnimations";
+import { api } from "@/lib/api";
 
 const HeroSection = () => {
+  const [content, setContent] = useState<any>({});
+
+  useEffect(() => {
+    const loadContent = async () => {
+      try {
+        const heroContent = await api.getContentBySection('hero').catch(() => ({}));
+        setContent(heroContent);
+      } catch (error) {
+        console.error('Failed to load hero content:', error);
+      }
+    };
+    loadContent();
+  }, []);
+
   const scrollToContact = () => {
     const element = document.getElementById("contact");
     element?.scrollIntoView({ behavior: "smooth" });
@@ -23,13 +40,17 @@ const HeroSection = () => {
       <TradingAnimations />
       
       <div className="container mx-auto px-4 relative z-10 text-center">
-        <h1 className="text-6xl md:text-8xl font-extrabold mb-6 text-shadow-glow animate-fade-in">
-          <span className="text-primary">BULL</span>{" "}
+        <div className="flex justify-center mb-8 animate-fade-in">
+          <img src={bullLogo} alt="BULL trading" className="h-32 md:h-40 w-auto" />
+        </div>
+        
+        <h1 className="text-6xl md:text-8xl font-extrabold mb-6 text-shadow-glow animate-fade-in" style={{ animationDelay: "0.1s" }}>
+          <span className="text-primary">{content.title || 'BULL'}</span>{" "}
           <span className="text-foreground">trading</span>
         </h1>
         
         <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto animate-fade-in" style={{ animationDelay: "0.2s" }}>
-          Шукаємо співробітників з України від 18 років з базовими навичками у трейдингу
+          {content.subtitle || 'Шукаємо співробітників з України від 18 років з базовими навичками у трейдингу'}
         </p>
         
         <Button
@@ -38,7 +59,7 @@ const HeroSection = () => {
           className="text-lg px-8 py-6 bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-glow hover:shadow-glow hover:scale-105 transition-smooth animate-fade-in"
           style={{ animationDelay: "0.4s" }}
         >
-          Залишити заявку
+          {content.buttonText || 'Залишити заявку'}
         </Button>
       </div>
       

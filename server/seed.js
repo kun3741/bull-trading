@@ -118,14 +118,17 @@ const seedDatabase = async () => {
     const content = [
       {
         section: "hero",
-        title: "BULL trading",
+        title: "BULL",
         subtitle: "Шукаємо співробітників з України від 18 років з базовими навичками у трейдингу",
         buttonText: "Залишити заявку",
       },
       {
         section: "about",
-        title: "Про компанію",
-        description: "BULL trading — це динамічна команда професійних трейдерів, які спеціалізуються на торгівлі на фінансових ринках.",
+        title: "Про",
+        titleHighlight: "компанію",
+        paragraph1: "<span class='text-primary font-semibold'>BULL trading</span> — це динамічна команда професійних трейдерів, які спеціалізуються на торгівлі на фінансових ринках.",
+        paragraph2: "Ми пропонуємо унікальну можливість для молодих талантів з України розвивати свої навички у трейдингу та досягати фінансового успіху разом з досвідченими наставниками.",
+        paragraph3: "Наша місія — створити середовище, де кожен член команди може розкрити свій потенціал, отримати професійний розвиток та досягти високих результатів на ринку.",
       },
       {
         section: "advantages",
@@ -139,8 +142,19 @@ const seedDatabase = async () => {
       },
       {
         section: "contact",
-        title: "Стань частиною команди",
+        title: "Стань частиною",
+        titleHighlight: "команди",
         subtitle: "Заповни форму і ми зв'яжемося з тобою для обговорення деталей співпраці",
+      },
+      {
+        section: "footer",
+        description: "Професійна команда трейдерів для вашого успіху на фінансових ринках",
+        phone: "+380 12 345 67 89",
+        email: "info@bulltrading.com",
+        instagram: "#",
+        telegram: "#",
+        viber: "#",
+        facebook: "#",
       },
     ];
     await Content.insertMany(content);

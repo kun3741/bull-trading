@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +14,19 @@ const ContactSection = () => {
     email: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [content, setContent] = useState<any>({});
+
+  useEffect(() => {
+    const loadContent = async () => {
+      try {
+        const contactContent = await api.getContentBySection('contact').catch(() => ({}));
+        setContent(contactContent);
+      } catch (error) {
+        console.error('Failed to load contact content:', error);
+      }
+    };
+    loadContent();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,10 +70,10 @@ const ContactSection = () => {
         <Card className="bg-card border-primary/20 shadow-glow">
           <CardHeader className="text-center">
             <CardTitle className="text-4xl font-bold text-foreground mb-2">
-              Стань частиною <span className="text-primary">команди</span>
+              {content.title || 'Стань частиною'} <span className="text-primary">{content.titleHighlight || 'команди'}</span>
             </CardTitle>
             <p className="text-muted-foreground text-lg">
-              Заповни форму і ми зв'яжемося з тобою для обговорення деталей співпраці
+              {content.subtitle || "Заповни форму і ми зв'яжемося з тобою для обговорення деталей співпраці"}
             </p>
           </CardHeader>
           

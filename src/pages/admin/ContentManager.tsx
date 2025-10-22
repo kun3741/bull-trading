@@ -16,11 +16,64 @@ const ContentManager = () => {
   const navigate = useNavigate();
 
   const sections = [
-    { key: "hero", title: "Головний блок", fields: ["title", "subtitle", "buttonText"] },
-    { key: "about", title: "Про компанію", fields: ["title", "description"] },
-    { key: "advantages", title: "Переваги", fields: ["title", "subtitle"] },
-    { key: "team", title: "Команда", fields: ["title", "subtitle"] },
-    { key: "contact", title: "Контакти", fields: ["title", "subtitle"] },
+    { 
+      key: "hero", 
+      title: "Головний блок", 
+      fields: [
+        { name: "title", label: "Заголовок", type: "input" },
+        { name: "subtitle", label: "Підзаголовок", type: "textarea" },
+        { name: "buttonText", label: "Текст кнопки", type: "input" }
+      ]
+    },
+    { 
+      key: "about", 
+      title: "Про компанію", 
+      fields: [
+        { name: "title", label: "Частина заголовка (перша)", type: "input" },
+        { name: "titleHighlight", label: "Частина заголовка (виділена)", type: "input" },
+        { name: "paragraph1", label: "Перший абзац", type: "textarea" },
+        { name: "paragraph2", label: "Другий абзац", type: "textarea" },
+        { name: "paragraph3", label: "Третій абзац", type: "textarea" }
+      ]
+    },
+    { 
+      key: "advantages", 
+      title: "Переваги", 
+      fields: [
+        { name: "title", label: "Заголовок", type: "input" },
+        { name: "subtitle", label: "Підзаголовок", type: "input" }
+      ]
+    },
+    { 
+      key: "team", 
+      title: "Команда", 
+      fields: [
+        { name: "title", label: "Заголовок", type: "input" },
+        { name: "subtitle", label: "Підзаголовок", type: "input" }
+      ]
+    },
+    { 
+      key: "contact", 
+      title: "Контакти", 
+      fields: [
+        { name: "title", label: "Частина заголовка (перша)", type: "input" },
+        { name: "titleHighlight", label: "Частина заголовка (виділена)", type: "input" },
+        { name: "subtitle", label: "Підзаголовок", type: "textarea" }
+      ]
+    },
+    { 
+      key: "footer", 
+      title: "Футер", 
+      fields: [
+        { name: "description", label: "Опис компанії", type: "textarea" },
+        { name: "phone", label: "Телефон", type: "input" },
+        { name: "email", label: "Email", type: "input" },
+        { name: "instagram", label: "Instagram (посилання)", type: "input" },
+        { name: "telegram", label: "Telegram (посилання)", type: "input" },
+        { name: "viber", label: "Viber (посилання)", type: "input" },
+        { name: "facebook", label: "Facebook (посилання)", type: "input" }
+      ]
+    },
   ];
 
   useEffect(() => {
@@ -92,7 +145,7 @@ const ContentManager = () => {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="hero" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-8">
+          <TabsList className="grid w-full grid-cols-6 mb-8">
             {sections.map((section) => (
               <TabsTrigger key={section.key} value={section.key}>
                 {section.title}
@@ -108,24 +161,21 @@ const ContentManager = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {section.fields.map((field) => (
-                    <div key={field}>
-                      <label className="block text-sm font-medium mb-2 capitalize">
-                        {field === "title" ? "Заголовок" :
-                         field === "subtitle" ? "Підзаголовок" :
-                         field === "description" ? "Опис" :
-                         field === "buttonText" ? "Текст кнопки" : field}
+                    <div key={field.name}>
+                      <label className="block text-sm font-medium mb-2">
+                        {field.label}
                       </label>
-                      {field === "description" ? (
+                      {field.type === "textarea" ? (
                         <Textarea
-                          value={contents[section.key]?.[field] || ""}
-                          onChange={(e) => updateField(section.key, field, e.target.value)}
+                          value={contents[section.key]?.[field.name] || ""}
+                          onChange={(e) => updateField(section.key, field.name, e.target.value)}
                           rows={5}
                           className="bg-input border-border"
                         />
                       ) : (
                         <Input
-                          value={contents[section.key]?.[field] || ""}
-                          onChange={(e) => updateField(section.key, field, e.target.value)}
+                          value={contents[section.key]?.[field.name] || ""}
+                          onChange={(e) => updateField(section.key, field.name, e.target.value)}
                           className="bg-input border-border"
                         />
                       )}
