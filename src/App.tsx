@@ -7,11 +7,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AdminLogin from "./pages/admin/Login";
 import AdminDashboard from "./pages/admin/Dashboard";
-import TeamManager from "./pages/admin/TeamManager";
-import AdvantagesManager from "./pages/admin/AdvantagesManager";
-import StatsManager from "./pages/admin/StatsManager";
-import ContentManager from "./pages/admin/ContentManager";
-import ApplicationsManager from "./pages/admin/ApplicationsManager";
+import SectionManager from "./pages/admin/SectionManager";
 
 const queryClient = new QueryClient();
 
@@ -25,11 +21,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/team" element={<TeamManager />} />
-          <Route path="/admin/advantages" element={<AdvantagesManager />} />
-          <Route path="/admin/stats" element={<StatsManager />} />
-          <Route path="/admin/content" element={<ContentManager />} />
-          <Route path="/admin/applications" element={<ApplicationsManager />} />
+          <Route path="/admin/section/:section" element={<SectionManager />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

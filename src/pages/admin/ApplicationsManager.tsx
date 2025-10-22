@@ -172,37 +172,24 @@ export default function ApplicationsManager() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background p-8">
-        <div className="container mx-auto">
-          <p className="text-center text-muted-foreground">Завантаження...</p>
-        </div>
+      <div className="w-full">
+        <p className="text-center text-muted-foreground py-8">Завантаження...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="container mx-auto max-w-7xl">
-        <div className="mb-8">
-          <Button
-            variant="outline"
-            onClick={() => window.location.href = '/admin/dashboard'}
-            className="mb-4"
-          >
-            ← Назад до панелі
-          </Button>
-          
-          <Card className="bg-card border-primary/20">
-            <CardHeader>
-              <CardTitle className="text-3xl font-bold text-primary">
-                Управління заявками
-              </CardTitle>
-              <p className="text-muted-foreground">
-                Всього заявок: {applications.length}
-              </p>
-            </CardHeader>
-          </Card>
-        </div>
+    <div className="w-full space-y-6">
+      <Card className="bg-card border-primary/20">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-primary">
+            Управління заявками
+          </CardTitle>
+          <p className="text-muted-foreground">
+            Всього заявок: {applications.length}
+          </p>
+        </CardHeader>
+      </Card>
 
         <Card className="bg-card border-primary/20">
           <CardContent className="p-6">
@@ -376,7 +363,6 @@ export default function ApplicationsManager() {
             )}
           </DialogContent>
         </Dialog>
-      </div>
     </div>
   );
 }
