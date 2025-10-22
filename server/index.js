@@ -51,8 +51,14 @@ if (process.env.NODE_ENV === 'production') {
   app.use(express.static(distPath));
 
   // Handle React routing, return all requests to React app
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(distPath, 'index.html'));
+  // Express 5 syntax - catch all non-API routes
+  app.use((req, res, next) => {
+    // If request doesn't start with /api, serve index.html
+    if (!req.path.startsWith('/api')) {
+      res.sendFile(path.join(distPath, 'index.html'));
+    } else {
+      next();
+    }
   });
 }
 
