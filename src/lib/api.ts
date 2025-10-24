@@ -146,7 +146,7 @@ class ApiClient {
   }
 
   // Applications
-  async submitApplication(data: { name: string; phone: string; email: string }) {
+  async submitApplication(data: { name: string; phone: string; email: string; website?: string }) {
     return this.request('/applications', {
       method: 'POST',
       body: JSON.stringify(data),

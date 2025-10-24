@@ -8,6 +8,78 @@
   const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
   const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
+  // Validation functions
+  function validatePhone(phone) {
+    if (!phone || typeof phone !== 'string') {
+      return { valid: false, message: 'Телефон обов\'язковий' };
+    }
+    
+    // Trim whitespace
+    const trimmedPhone = phone.trim();
+    
+    // Remove spaces, dashes, parentheses for validation
+    const cleanPhone = trimmedPhone.replace(/[\s\-()]/g, '');
+    
+    // Check if contains only digits and +
+    if (!/^[\+\d]+$/.test(cleanPhone)) {
+      return { valid: false, message: 'Телефон може містити тільки цифри та знак +' };
+    }
+    
+    // Check Ukrainian phone format (+380XXXXXXXXX - 13 characters)
+    if (cleanPhone.startsWith('+380')) {
+      if (cleanPhone.length !== 13) {
+        return { valid: false, message: 'Невірний формат українського номера (+380XXXXXXXXX)' };
+      }
+    } else if (cleanPhone.startsWith('+')) {
+      // Other international numbers (up to 15 digits according to E.164)
+      if (cleanPhone.length < 8 || cleanPhone.length > 15) {
+        return { valid: false, message: 'Невірна довжина міжнародного номера (8-15 символів)' };
+      }
+    } else if (cleanPhone.startsWith('0')) {
+      // Local format (0XXXXXXXXX - 10 digits)
+      if (cleanPhone.length !== 10) {
+        return { valid: false, message: 'Невірний формат номера (10 цифр)' };
+      }
+    } else {
+      return { valid: false, message: 'Номер повинен починатися з + або 0' };
+    }
+    
+    return { valid: true, cleaned: cleanPhone };
+  }
+
+  function validateEmail(email) {
+    if (!email || typeof email !== 'string') {
+      return { valid: false, message: 'Email обов\'язковий' };
+    }
+    
+    // Trim and lowercase
+    const trimmedEmail = email.trim().toLowerCase();
+    
+    // Basic email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      return { valid: false, message: 'Невірний формат email' };
+    }
+    
+    // Check maximum length (RFC 5321)
+    if (trimmedEmail.length > 254) {
+      return { valid: false, message: 'Email занадто довгий' };
+    }
+    
+    // Check for Cyrillic characters
+    if (/[а-яА-ЯіІїЇєЄґҐ]/.test(trimmedEmail)) {
+      return { valid: false, message: 'Email не може містити кирилицю' };
+    }
+    
+    // Check local part length (before @)
+    const localPart = trimmedEmail.split('@')[0];
+    if (localPart.length > 64) {
+      return { valid: false, message: 'Невірний формат email' };
+    }
+    
+    return { valid: true, cleaned: trimmedEmail };
+  }
+
   // Function to send message to Telegram
   async function sendToTelegram(application) {
     if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
@@ -23,6 +95,9 @@
   📧 <b>Email:</b> ${application.email}
 
   🕐 <b>Дата:</b> ${new Date(application.createdAt).toLocaleString('uk-UA')}
+  🌐 <b>IP:</b> ${application.ipAddress || 'Unknown'}
+  📊 <b>User Agent:</b> ${application.userAgent?.substring(0, 50) || 'Unknown'}...
+  🔗 <b>Referer:</b> ${application.referer || 'Direct'}
 
   #новазаявка #bulltrading
     `.trim();
@@ -83,21 +158,85 @@
   // Create new application (public)
   router.post('/', async (req, res) => {
     try {
-      const { name, phone, email } = req.body;
+      const { name, phone, email, website } = req.body;
 
-      // Validation
+      // Honeypot field check - якщо заповнене, це бот
+      if (website) {
+        console.warn('🤖 Bot detected - honeypot field filled:', req.ip);
+        // Повертаємо успішну відповідь, щоб бот не розумів що його виявлено
+        return res.status(201).json({ 
+          message: 'Заявку успішно надіслано!' 
+        });
+      }
+
+      // Get client metadata
+      const ipAddress = req.ip || req.connection.remoteAddress;
+      const userAgent = req.get('user-agent') || 'Unknown';
+      const referer = req.get('referer') || req.get('referrer') || 'Direct';
+
+      // Log submission attempt
+      console.log(`📝 Application submission from IP: ${ipAddress}`);
+
+      // Basic validation
       if (!name || !phone || !email) {
         return res.status(400).json({ 
           message: 'Будь ласка, заповніть всі поля' 
         });
       }
 
-      // Create application
+      // Validate name
+      const trimmedName = name.trim();
+      if (trimmedName.length < 2) {
+        return res.status(400).json({ 
+          message: 'Ім\'я повинно містити мінімум 2 символи' 
+        });
+      }
+      if (trimmedName.length > 100) {
+        return res.status(400).json({ 
+          message: 'Ім\'я занадто довге' 
+        });
+      }
+
+      // Validate phone
+      const phoneValidation = validatePhone(phone);
+      if (!phoneValidation.valid) {
+        return res.status(400).json({ 
+          message: phoneValidation.message 
+        });
+      }
+
+      // Validate email
+      const emailValidation = validateEmail(email);
+      if (!emailValidation.valid) {
+        return res.status(400).json({ 
+          message: emailValidation.message 
+        });
+      }
+
+      // Check for duplicate submissions from same IP in last hour
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+      const recentSubmissions = await Application.countDocuments({
+        ipAddress: ipAddress,
+        createdAt: { $gte: oneHourAgo }
+      });
+
+      if (recentSubmissions >= 2) {
+        console.warn(`⚠️ Multiple submissions detected from IP: ${ipAddress}`);
+        return res.status(429).json({ 
+          message: 'Ви вже відправили заявку. Будь ласка, зачекайте перед наступною відправкою.' 
+        });
+      }
+
+      // Create application with validated and cleaned data
       const application = new Application({
-        name,
-        phone,
-        email,
-        status: 'new'
+        name: trimmedName,
+        phone: phoneValidation.cleaned,
+        email: emailValidation.cleaned,
+        status: 'new',
+        ipAddress: ipAddress,
+        userAgent: userAgent,
+        referer: referer,
+        submissionCount: recentSubmissions + 1
       });
 
       await application.save();

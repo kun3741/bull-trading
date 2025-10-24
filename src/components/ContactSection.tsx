@@ -12,6 +12,11 @@ const ContactSection = () => {
     name: "",
     phone: "",
     email: "",
+    website: "", // Honeypot field - invisible to users
+  });
+  const [errors, setErrors] = useState({
+    phone: "",
+    email: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [content, setContent] = useState<any>({});
@@ -28,13 +33,119 @@ const ContactSection = () => {
     loadContent();
   }, []);
 
+  // Валідація номера телефону
+  const validatePhone = (phone: string): string => {
+    if (!phone) return "";
+    
+    // Очищуємо від пробілів та дефісів для перевірки
+    const cleanPhone = phone.replace(/[\s\-()]/g, "");
+    
+    // Перевіряємо що містить тільки цифри та +
+    if (!/^[\+\d]+$/.test(cleanPhone)) {
+      return "Телефон може містити тільки цифри та знак +";
+    }
+    
+    // Перевіряємо українські номери (+380XXXXXXXXX - 13 символів)
+    if (cleanPhone.startsWith("+380")) {
+      if (cleanPhone.length > 13) {
+        return "Номер телефону занадто довгий (максимум 13 символів з +380)";
+      }
+      if (cleanPhone.length < 13 && cleanPhone.length > 4) {
+        return "Введіть повний номер телефону (+380XXXXXXXXX)";
+      }
+    } else if (cleanPhone.startsWith("+")) {
+      // Інші міжнародні номери (до 15 цифр згідно E.164)
+      if (cleanPhone.length > 15) {
+        return "Номер телефону занадто довгий (максимум 15 символів)";
+      }
+    } else if (cleanPhone.startsWith("0")) {
+      // Локальний формат (0XXXXXXXXX - 10 цифр)
+      if (cleanPhone.length > 10) {
+        return "Номер телефону занадто довгий (максимум 10 цифр)";
+      }
+      if (cleanPhone.length < 10 && cleanPhone.length > 1) {
+        return "Введіть повний номер телефону (10 цифр)";
+      }
+    }
+    
+    return "";
+  };
+
+  // Валідація email
+  const validateEmail = (email: string): string => {
+    if (!email) return "";
+    
+    // Перевірка на базовий формат email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return "Введіть коректну адресу електронної пошти";
+    }
+    
+    // Перевірка на максимальну довжину
+    if (email.length > 254) {
+      return "Email занадто довгий";
+    }
+    
+    // Перевірка на некоректні символи
+    if (/[а-яА-ЯіІїЇєЄґҐ]/.test(email)) {
+      return "Email не може містити кирилицю";
+    }
+    
+    return "";
+  };
+
+  // Обробка зміни телефону
+  const handlePhoneChange = (value: string) => {
+    // Обмежуємо довжину вводу
+    const maxLength = value.startsWith("+") ? 15 : 10;
+    const truncatedValue = value.slice(0, maxLength);
+    
+    setFormData({ ...formData, phone: truncatedValue });
+    
+    // Валідуємо тільки якщо поле не пусте
+    if (truncatedValue) {
+      const error = validatePhone(truncatedValue);
+      setErrors({ ...errors, phone: error });
+    } else {
+      setErrors({ ...errors, phone: "" });
+    }
+  };
+
+  // Обробка зміни email
+  const handleEmailChange = (value: string) => {
+    setFormData({ ...formData, email: value });
+    
+    // Валідуємо тільки якщо поле не пусте
+    if (value) {
+      const error = validateEmail(value);
+      setErrors({ ...errors, email: error });
+    } else {
+      setErrors({ ...errors, email: "" });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Перевірка на заповненість полів
     if (!formData.name || !formData.phone || !formData.email) {
       toast({
         title: "Помилка",
         description: "Будь ласка, заповніть всі поля",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Остаточна валідація перед відправкою
+    const phoneError = validatePhone(formData.phone);
+    const emailError = validateEmail(formData.email);
+    
+    if (phoneError || emailError) {
+      setErrors({ phone: phoneError, email: emailError });
+      toast({
+        title: "Помилка валідації",
+        description: "Будь ласка, виправте помилки у формі",
         variant: "destructive",
       });
       return;
@@ -50,7 +161,8 @@ const ContactSection = () => {
         description: "Ми зв'яжемося з вами найближчим часом",
       });
       
-      setFormData({ name: "", phone: "", email: "" });
+      setFormData({ name: "", phone: "", email: "", website: "" });
+      setErrors({ phone: "", email: "" });
     } catch (error) {
       console.error('Submission error:', error);
       toast({
@@ -103,10 +215,15 @@ const ContactSection = () => {
                   type="tel"
                   placeholder="+380 XX XXX XX XX"
                   value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  onChange={(e) => handlePhoneChange(e.target.value)}
                   required
-                  className="bg-input border-border focus:border-primary transition-smooth"
+                  className={`bg-input border-border focus:border-primary transition-smooth ${
+                    errors.phone ? "border-destructive" : ""
+                  }`}
                 />
+                {errors.phone && (
+                  <p className="text-sm text-destructive mt-1">{errors.phone}</p>
+                )}
               </div>
 
               <div>
@@ -118,9 +235,28 @@ const ContactSection = () => {
                   type="email"
                   placeholder="your@email.com"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={(e) => handleEmailChange(e.target.value)}
                   required
-                  className="bg-input border-border focus:border-primary transition-smooth"
+                  className={`bg-input border-border focus:border-primary transition-smooth ${
+                    errors.email ? "border-destructive" : ""
+                  }`}
+                />
+                {errors.email && (
+                  <p className="text-sm text-destructive mt-1">{errors.email}</p>
+                )}
+              </div>
+
+              {/* Honeypot field - приховане від користувачів, але боти його заповнюють */}
+              <div className="hidden" aria-hidden="true">
+                <label htmlFor="website">Website</label>
+                <Input
+                  id="website"
+                  name="website"
+                  type="text"
+                  value={formData.website}
+                  onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                  tabIndex={-1}
+                  autoComplete="off"
                 />
               </div>
 

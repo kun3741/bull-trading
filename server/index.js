@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import rateLimit from 'express-rate-limit';
 import teamRoutes from './routes/team.js';
 import advantagesRoutes from './routes/advantages.js';
 import statsRoutes from './routes/stats.js';
@@ -20,10 +21,49 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Trust proxy - важливо для отримання правильних IP адрес за reverse proxy (Render, Heroku, etc)
+app.set('trust proxy', 1);
+
+// Rate limiting для захисту від спаму
+const applicationLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 хвилин
+  max: 3, // максимум 3 заявки з одного IP за 15 хвилин
+  message: { 
+    message: 'Занадто багато заявок з цієї IP адреси. Будь ласка, спробуйте пізніше.' 
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  // Skip successful requests from counting
+  skipSuccessfulRequests: false,
+  // Skip failed requests from counting
+  skipFailedRequests: false,
+  handler: (req, res) => {
+    console.warn(`⚠️ Rate limit exceeded for IP: ${req.ip}`);
+    res.status(429).json({
+      message: 'Занадто багато заявок з цієї IP адреси. Будь ласка, спробуйте через 15 хвилин.',
+      retryAfter: Math.ceil(req.rateLimit.resetTime / 1000)
+    });
+  }
+});
+
+// General API rate limiting
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 хвилин
+  max: 100, // максимум 100 запитів з одного IP за 15 хвилин
+  message: { 
+    message: 'Занадто багато запитів. Спробуйте пізніше.' 
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Middleware
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Apply general rate limiting to all API routes
+app.use('/api/', apiLimiter);
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/bulltrading')
@@ -36,7 +76,8 @@ app.use('/api/advantages', advantagesRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/content', contentRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/applications', applicationsRoutes);
+// Apply stricter rate limiting to application submissions
+app.use('/api/applications', applicationLimiter, applicationsRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
